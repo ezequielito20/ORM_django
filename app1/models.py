@@ -183,3 +183,17 @@ class NuevoNombre(models.Model):
     
     class Meta:
         db_table = 'el_nombre_que_se_guarda'
+        
+class Unico(models.Model):
+    nombre = models.CharField(max_length=50)
+    
+    def save(self, *args, **kwargs):
+        if self.__class__.objects.count():
+            self.pk = self.__class__.objects.first().pk
+        super().save(*args, **kwargs)
+    
+    @classmethod
+    def truncate(cls):
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE %s CASCADE' % cls._meta.db_table)    
