@@ -1,6 +1,8 @@
 from django.db import models
 from datetime import date
 
+from django.utils.text import slugify
+
 
 class ModeloAuditoria(models.Model):
     fecha_crea = models.DateTimeField(auto_now_add=True)
@@ -130,9 +132,14 @@ class Hijo(models.Model):
 
 class Publicacion(ModeloAuditoria):
     titulo = models.CharField(max_length=50)
+    slug = models.SlugField(max_length=50, default='', unique=True)
     
     def __str__(self):
         return self.titulo
+    
+    def save(self):
+        self.slug = slugify(self.titulo)
+        super(Publicacion, self).save()
     
     class Meta:
         verbose_name_plural = "Publicaciones"
@@ -165,3 +172,14 @@ class Employee(models.Model):
     class Meta:
         verbose_name_plural = "Empleados"
 
+class NuevoNombre(models.Model):
+    nombre = models.CharField(max_length=50)
+    a = models.CharField(max_length=50, 
+                        db_column='nombre_columna',
+                        default='')
+    
+    def __str__(self):
+        return self.nombre
+    
+    class Meta:
+        db_table = 'el_nombre_que_se_guarda'
