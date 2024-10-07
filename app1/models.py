@@ -34,12 +34,20 @@ class Categoria(ModeloAuditoria):
     # sobrescribimos save para que la descripcion se guarde en mayusculas porque asi lo deseamos
     def save(self):
         self.descripcion = self.descripcion.upper()
+        print('en medio de save categoria')
         super(Categoria, self).save()
         
     # definimos el nombre en plural del modelo
     class Meta:
         # esto es para que si estas trabajando con el admin de Django se muestre en plural el modelo
         verbose_name_plural = "Categorias"
+        
+class SubCategoria(Categoria):
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+    descripcion = models.CharField(max_length=100)
+    
+    def __str__(self):
+        return self.categoria.descripcion + ' - ' + self.descripcion
         
 class Persona(ModeloAuditoria):
     nombre = models.CharField(max_length=50)
@@ -197,3 +205,20 @@ class Unico(models.Model):
         from django.db import connection
         with connection.cursor() as cursor:
             cursor.execute('TRUNCATE TABLE %s CASCADE' % cls._meta.db_table)    
+            
+            
+from django.db.models.signals import post_save, post_delete, pre_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=Categoria)
+def categoria_saved(sender, *args, **kwargs):
+    print('despues de save categoria')
+
+@receiver(pre_save, sender=Categoria)
+def categoria_pre_saved(sender, *args, **kwargs):
+    print('antes de save categoria')
+
+    
+@receiver(post_delete, sender=Categoria)
+def categoria_deleted(sender, *args, **kwargs):
+    print('Categoria deleted')
